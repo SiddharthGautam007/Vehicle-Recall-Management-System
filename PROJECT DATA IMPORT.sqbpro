@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="MODULE 5 FINAL PROJECT DATA IMPORT.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="3389"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="Vehical_recall" custom_title="0" dock_id="1" table="4,14:mainVehical_recall"/><dock_state state="000000ff00000000fd000000010000000200000393000002e7fc0100000001fb000000160064006f0063006b00420072006f00770073006500310100000000000003930000011700ffffff000003930000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="Manufacturer" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="103"/><column index="2" value="54"/><column index="3" value="128"/><column index="4" value="85"/><column index="5" value="79"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="Recall_Event" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="57"/><column index="2" value="85"/><column index="3" value="70"/><column index="4" value="117"/><column index="5" value="117"/><column index="6" value="148"/><column index="7" value="70"/><column index="8" value="103"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="User_Responce" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="76"/><column index="2" value="90"/><column index="3" value="81"/><column index="4" value="96"/><column index="5" value="63"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="Vehical" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="65"/><column index="2" value="74"/><column index="3" value="63"/><column index="4" value="96"/><column index="5" value="75"/><column index="6" value="103"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="Vehical_Owner" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="85"/><column index="2" value="120"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="Vehical_recall" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="102"/><column index="2" value="67"/><column index="3" value="96"/><column index="4" value="80"/><column index="5" value="73"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="sqlite_sequence" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort><column index="1" mode="0"/></sort><column_widths><column index="1" value="117"/><column index="2" value="39"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="SQL 1*">-- Create Manufacturer table
+CREATE TABLE Manufacturer (
+    manufacturer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    headquarter_location TEXT NOT NULL,
+    contact_info NUMERIC NOT NULL,
+    vehical_type TEXT NOT NULL
+);
+
+-- Create Vehicle Owner table
+CREATE TABLE Vehical_Owner (
+    owner_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    location TEXT NOT NULL,
+    owner_contact_info NUMERIC NOT NULL
+);
+
+-- Create Recall Event table
+CREATE TABLE Recall_Event (
+    nhtsa_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    report_date DATE NOT NULL,
+    recall_type TEXT,
+    affected_vehicals TEXT NOT NULL,
+    description TEXT NOT NULL,
+    corrective_action TEXT NOT NULL,
+    severity TEXT CHECK (severity IN ('Low', 'Moderate', 'High')),
+    manufacturer_id INTEGER NOT NULL,
+    FOREIGN KEY (manufacturer_id) REFERENCES Manufacturer(manufacturer_id) ON DELETE CASCADE
+);
+
+-- Create Vehicle table
+CREATE TABLE Vehical (
+    vehical_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    model_year INTEGER CHECK (model_year &gt;= 1886), -- The first car was made in 1886
+    owner_id INTEGER NOT NULL,
+    recall_event_id INTEGER,
+    vin_number TEXT UNIQUE NOT NULL,
+    manufacturer_id INTEGER NOT NULL,
+    FOREIGN KEY (owner_id) REFERENCES Vehical_Owner(owner_id) ON DELETE SET NULL,
+    FOREIGN KEY (recall_event_id) REFERENCES Recall_Event(nhtsa_id) ON DELETE SET NULL,
+    FOREIGN KEY (manufacturer_id) REFERENCES Manufacturer(manufacturer_id) ON DELETE CASCADE
+);
+
+-- Create Vehicle Recall table
+CREATE TABLE Vehical_recall (
+    vehical_recall_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vehical_id INTEGER NOT NULL,
+    recall_event_id INTEGER NOT NULL,
+    recall_status TEXT CHECK (recall_status IN ('Pending', 'Completed', 'In Progress')),
+    repair_date DATE,
+    FOREIGN KEY (vehical_id) REFERENCES Vehical(vehical_id) ON DELETE CASCADE,
+    FOREIGN KEY (recall_event_id) REFERENCES Recall_Event(nhtsa_id) ON DELETE CASCADE
+);
+
+-- Create User Response table
+CREATE TABLE User_Responce(
+    responce_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    responce_time TIME DEFAULT CURRENT_TIME,
+    action_taken TEXT,
+    recall_event_id INTEGER NOT NULL,
+    owner_id INTEGER NOT NULL,
+    FOREIGN KEY (recall_event_id) REFERENCES Recall_Event(nhtsa_id) ON DELETE CASCADE,
+    FOREIGN KEY (owner_id) REFERENCES Vehical_Owner(owner_id) ON DELETE CASCADE
+);
+
+
+------------------------------------INSERTING DATA--------------------------------------------
+
+-- Inserting a record into Manufacturer table
+INSERT INTO Manufacturer (manufacturer_id, name, headquarter_location, contact_info, vehical_type)
+VALUES (101, 'Ford', 'USA', 9876543210, 'SUV')
+(102, 'Toyota', 'Japan', 1234567890, 'Sedan'),
+(103, 'BMW', 'Germany', 9845372245, 'Crossover');
+
+
+-- Inserting records into Vehical_Owner table
+INSERT INTO Vehical_Owner (owner_id,location, owner_contact_info)
+VALUES (01,'New York', 1112233445),
+ (02,'California', 5566778899),
+ (03,'Boston',6573467674);
+ 
+
+-- Inserting a record into Recall_Event table
+INSERT INTO Recall_Event (nhtsa_id, report_date, recall_type, affected_vehicals, description, corrective_action, severity, manufacturer_id)
+VALUES (1, '2024-12-01', 'Safety', 'Ford F-150', 'Faulty airbags', 'Replace airbags', 'High', 101),
+ (2, '2024-12-10', 'Safety', 'Toyota Corolla', 'Brake issue', 'Replace brake pads', 'Moderate', 102),
+ (3, '2024-04-05', 'Service', 'BMW X2', 'Tyre issue', 'Puncture', 'Low', 103);
+
+
+ 
+-- Inserting records into Vehical table
+INSERT INTO Vehical (vehical_id, model_year, owner_id, recall_event_id, vin_number, manufacturer_id)
+VALUES (1, 2020, 01, 1, 12345678901234567, 101),
+ (2, 2019, 02, 2, 98765432109876543, 102),
+ (3, 2018, 03, 3, 83767456373835627, 103);
+
+ 
+-- Inserting a record into Vehical_recall table
+INSERT INTO Vehical_recall (vehical_recall_id, vehical_id, recall_event_id, recall_status, repair_date)
+VALUES (1001, 1, 1, 'Pending', '2024-12-15'),
+ (1002, 2, 2, 'Completed', '2024-12-01'),
+ (1003,3,3,'Pending','2024-11-09');
+ 
+
+ -- Inserting records into User_Responce table
+INSERT INTO User_Responce (responce_id, responce_time, action_taken, recall_event_id, owner_id)
+VALUES (10, '10:00:00', 'Airbag replacement scheduled', 1, 01),
+ (20, '14:00:00', 'Brake pads replaced', 2, 02),
+ (30,'07:00:00','Puncture fixed',3,03);
+
+ 
+ -------------------------------------------------SELECT STATEMENTS---------------------------------------------------
+ 
+--Just to check the data in the tables 
+SELECT * FROM Manufacturer;
+SELECT * FROM Vehical_Owner;
+SELECT * FROM Recall_Event;
+SELECT * FROM Vehical;
+SELECT * FROM Vehical_recall;
+SELECT * FROM User_Responce;
+
+
+--Retrieve all Recall_Event records with the associated manufacturer name
+
+SELECT Recall_Event.nhtsa_id, Recall_Event.report_date, Recall_Event.recall_type, Recall_Event.affected_vehicals, 
+       Recall_Event.description, Recall_Event.corrective_action, Recall_Event.severity, Manufacturer.name AS manufacturer_name
+FROM Recall_Event
+JOIN Manufacturer ON Recall_Event.manufacturer_id = Manufacturer.manufacturer_id;
+
+
+
+--want to see all vehicles involved in safety recalls and the status of those recalls.
+
+SELECT Vehical.vehical_id, Vehical.model_year, Vehical.vin_number, 
+       Recall_Event.recall_type, Recall_Event.description, Recall_Event.severity, 
+       Vehical_recall.recall_status
+FROM Vehical_recall
+INNER JOIN Vehical ON Vehical_recall.vehical_id = Vehical.vehical_id
+INNER JOIN Recall_Event ON Vehical_recall.recall_event_id = Recall_Event.nhtsa_id
+WHERE Recall_Event.recall_type = 'Safety';
+
+
+
+-- gathering full details about a vehicle, its owner, and its manufacturer.
+
+SELECT Vehical.vehical_id, Vehical.model_year, Vehical.vin_number, 
+       Vehical_Owner.owner_contact_info, Manufacturer.name AS manufacturer_name
+FROM Vehical
+INNER JOIN Vehical_Owner ON Vehical.owner_id = Vehical_Owner.owner_id
+INNER JOIN Manufacturer ON Vehical.manufacturer_id = Manufacturer.manufacturer_id;
+
+
+ 
+-- Listing all vehicles and their recall statuses, including the owner’s location and contact information
+
+SELECT Vehical_recall.vehical_recall_id, 
+       Vehical_recall.recall_status, 
+       Vehical_recall.repair_date, 
+       Vehical.model_year,
+       Manufacturer.name, 
+       Vehical_Owner.owner_id, 
+       Vehical_Owner.location, 
+       Vehical_Owner.owner_contact_info
+FROM Vehical_recall 
+INNER JOIN Vehical ON Vehical_recall.vehical_id = Vehical.vehical_id
+INNER JOIN Vehical_Owner ON Vehical.owner_id = Vehical_Owner.owner_id
+INNER JOIN Manufacturer ON Vehical.manufacturer_id = Manufacturer.manufacturer_id;
+
+
+
+--retrieving the details of each vehicle, the associated recall events, recall status, owner's contact info, 
+-- and their actions based on the relationships between the tables.
+
+SELECT Manufacturer.name,
+Manufacturer.vehical_type,
+Recall_Event.recall_type,
+Recall_Event.severity,
+Vehical_recall.recall_status,
+Vehical.vehical_id,
+Vehical.vin_number,
+Vehical.model_year,
+Vehical_Owner.owner_id,
+Vehical_Owner.owner_contact_info,
+User_Responce.action_taken
+FROM Manufacturer 
+INNER JOIN Recall_Event on Manufacturer.manufacturer_id= Recall_Event.manufacturer_id
+INNER JOIN Vehical_recall on Recall_Event.nhtsa_id= Vehical_recall.recall_event_id
+INNER JOIN Vehical on Vehical_recall.vehical_id= Vehical.vehical_id
+INNER JOIN Vehical_Owner on Vehical.owner_id= Vehical_Owner.owner_id
+INNER JOIN User_Responce on Vehical_Owner.owner_id= User_Responce.owner_id 
+
+
+
+--Retrieve user responses for a specific recall event, sorted by response time.
+
+SELECT responce_id, action_taken, responce_time
+FROM User_Responce
+WHERE recall_event_id = 1
+ORDER BY responce_time ASC;
+
+--Find all recall events with the highest severity and their corresponding user responses.
+
+SELECT re.nhtsa_id, re.description, re.severity, ur.action_taken
+FROM Recall_Event re
+JOIN User_Responce ur ON re.nhtsa_id = ur.recall_event_id
+WHERE re.severity = (SELECT MAX(severity) FROM Recall_Event);
+
+--Categorizing recall events based on severity and display the response actions.
+
+SELECT 
+    re.nhtsa_id, 
+    re.description, 
+    CASE 
+        WHEN severity = 'High' THEN 'Critical'
+        WHEN severity = 'Moderate' THEN 'Important'
+        WHEN severity = 'Low' THEN 'Minor'
+        ELSE 'Unknown'
+    END AS severity_category,
+    ur.action_taken
+FROM Recall_Event re
+JOIN User_Responce ur ON re.nhtsa_id = ur.recall_event_id;
+
+
+SELECT 
+    Recall_Event.nhtsa_id,
+    Recall_Event.recall_type,
+    Recall_Event.severity,
+    COUNT(Vehical_recall.vehical_id) AS affected_vehicles,
+    Recall_Event.corrective_action
+FROM Recall_Event
+LEFT JOIN Vehical_recall ON Recall_Event.nhtsa_id = Vehical_recall.recall_event_id
+GROUP BY Recall_Event.nhtsa_id
+ORDER BY Recall_Event.severity DESC;
+
+
+
+SELECT 
+    Vehical_recall.recall_status,
+    COUNT(Vehical_recall.vehical_id) AS vehicle_count
+FROM Vehical_recall
+GROUP BY Vehical_recall.recall_status
+ORDER BY vehicle_count DESC;
+
+
+SELECT 
+    Manufacturer.name,
+    COUNT(Vehical_recall.vehical_id) AS recall_count
+FROM Manufacturer
+JOIN Vehical ON Manufacturer.manufacturer_id = Vehical.manufacturer_id
+JOIN Vehical_recall ON Vehical.vehical_id = Vehical_recall.vehical_id
+GROUP BY Manufacturer.name
+ORDER BY recall_count DESC;
+</sql><sql name="&amp;Foreign-Key Check">PRAGMA foreign_key_check;</sql><current_tab id="0"/></tab_sql></sqlb_project>
